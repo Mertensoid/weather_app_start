@@ -23,7 +23,7 @@ class WeatherForecastPage extends StatefulWidget {
 class _WeatherForecastPageState extends State<WeatherForecastPage> {
   List<ListItem> weatherForecast = <ListItem>[];
 
-  Future<List<ListItem>> getWeather(double lat, double lng) async {
+  Future<List<ForecastResponseList>> getWeather(double lat, double lng) async {
     var queryParameters = {
       'APPID': Constants.WEATHER_APP_ID,
       'units': 'metric',
@@ -42,9 +42,19 @@ class _WeatherForecastPageState extends State<WeatherForecastPage> {
       var forecastResponse = ForecastResponse.fromJson(json.decode(response.body));
       if (forecastResponse.cod == "200") {
         return forecastResponse.list;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                  Text('Error ${forecastResponse.cod}')));
       }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                Text('Error')));
     }
-
+    return <ForecastResponseList>[];
   }
 
   @override
