@@ -7,6 +7,7 @@ import 'package:weather_app_start/entity/forecast_response_entity.dart';
 import 'package:weather_app_start/entity/weather.dart';
 import 'package:weather_app_start/list_item.dart';
 import 'package:http/http.dart' as http;
+import 'package:geolocator/geolocator.dart';
 
 class WeatherForecastPage extends StatefulWidget {
 
@@ -57,8 +58,33 @@ class _WeatherForecastPageState extends State<WeatherForecastPage> {
     return <ForecastResponseList>[];
   }
 
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    return await Geolocator.getCurrentPosition();
+  }
+
   @override
   void initState() {
+    _determinePosition().then((value) => print(value.latitude));
     var itCurrentDay = DateTime.now();
     weatherForecast.add(DayHeading(itCurrentDay));
     List<Weather> weatherData = [
